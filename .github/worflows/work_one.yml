@@ -1,0 +1,23 @@
+cd app
+npm ci
+npm run test
+``` test it et ut react
+
+coverage
+cd server
+npm i / ci
+npm run test
+``` test it et ut pour node
+
+pyp3
+py test
+``` test it et ut pour python
+
+docker-compose-nodejs-mongodb up
+cypress
+docker-composer-nodejs-mongodb down
+docker-compose-py-mysql up
+cypress
+docker-compose-py-mysql down
+``` test it et ut pour docker
+
