@@ -1,8 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { queryByTestId, render, screen } from "@testing-library/react";
+import { toBeInTheDocument } from "@testing-library/jest-dom/extend-expect"; // Import the toBeInTheDocument function
+import App from "./App";
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+describe(" App Component Tests", () => {
+  it("renders the App component", () => {
+    render(<App />);
+    const title = screen.getByText(/Users manager/i);
+    expect(title).toBeInTheDocument();
+    expect(screen.queryByTestId("title")).toBeInTheDocument(); 
+  });
 });
