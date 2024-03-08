@@ -1,70 +1,133 @@
-# Getting Started with Create React App
+# Full-stack Application with Docker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project demonstrates a versatile Docker architecture for running a React application integrated with different backend and database technologies. Specifically, it showcases setups using MongoDB with Node.js, and MySQL with Python, all serving a React frontend. The primary function of these applications is to enable CRUD operations, display a list of registered users, and provide admin capabilities for user management.
 
-## Available Scripts
+## Docker Architecture
 
-In the project directory, you can run:
+The project is structured as follows, facilitating separation of concerns and modular development across different technologies:
+```
+.
+├── app
+│   ├── cypress
+│   ├── DockerfileReact
+│   ...
+├── server
+│   ├── DockerfileNodejs
+│   ├── DockerfilePython
+│   ├── server.js
+│   ├── server.py
+├── sqlfiles
+│   ├── migrate-v001.sql
+│   ...
+├── mongofiles
+│   ├── migrate-v001.json
+│   ...
+├── docker-compose-python-mysql.yml
+├── docker-compose-nodejs-mongodb.yml
+└── README.md
+```
+## MongoDB, NodeJS, and React Setup
 
-### `npm start`
+The docker-compose-nodejs-mongodb.yml file defines a Docker composition for running the application using MongoDB and Node.js for the backend, with React for the frontend:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+#### docker-compose-nodejs-mongodb.yml :
+```
+version: '3.8'
+services:
+  app:
+    build: ./app
+    ports:
+      - "3000:3000"
+  server:
+    build:
+      context: ./server
+      dockerfile: DockerfileNodejs
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongo
+    volumes:
+      - ./mongofiles:/data/db
+    ports:
+      - "27017:27017"
+```
 
-### `npm test`
+## MySQL, Python, and React Setup
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The docker-compose-python-mysql.yml file outlines a Docker composition for deploying the application using MySQL and Python for the backend, with React on the frontend:
 
-### `npm run build`
+#### docker-compose-python-mysql.yml
+```
+version: '3.8'
+services:
+  app:
+    build: ./app
+    ports:
+      - "3000:3000"
+  server:
+    build:
+      context: ./server
+      dockerfile: DockerfilePython
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - ./sqlfiles:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app_db
+    ports:
+      - "3306:3306"
+```
+## Deployment
+To deploy the application, use the corresponding docker-compose command:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### For MongoDB/NodeJS/React:
+```
+docker-compose -f docker-compose-nodejs-mongodb.yml up -d
+```
+### For MySQL/Python/React:
+```
+docker-compose -f docker-compose-python-mysql.yml up -d
+```
+After starting the application, access the React frontend by navigating to http://localhost:3000 in your web browser.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## GitHub Actions Pipeline
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Our CI/CD pipeline, defined in .github/workflows/ci-cd.yml, automates the build, test, and deployment process, encompassing unit tests, integration tests, Docker environment setup, and Cypress end-to-end tests.
+```
 
-### `npm run eject`
+name: CI/CD Pipeline
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+on: [push, pull_request]
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Docker Environment
+        run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
+      ...
+      - name: Shutdown Docker Environment
+        run: docker-compose -f docker-compose-nodejs-mongodb.yml down
+```
+## Testing
+This project includes unit, integration, and end-to-end tests. For specific instructions on executing these tests, please refer to the test scripts located in the respective app and server directories.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Contributing
+We welcome contributions from the community! If you'd like to contribute, please follow these steps:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. Fork the repository.
+2. Create a new branch for your feature or fix.
+3. Commit your changes with meaningful commit messages.
+4. Submit a pull request against the main branch.
+5. Please make sure your code adheres to our coding standards and includes tests, if applicable.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
