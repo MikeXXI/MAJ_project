@@ -2,6 +2,7 @@
 
 # dependencies
 /my-app/node_modules
+/my-app/coverage
 /.pnp
 .pnp.js
 
