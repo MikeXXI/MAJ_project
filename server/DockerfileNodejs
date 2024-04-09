@@ -1,5 +1,5 @@
 FROM node:20
 WORKDIR /server
 ENV PATH /server/node_modules/.bin:$PATH
-RUN npm install mongoose express dotenv
+RUN npm install mongoose express dotenv cors
 EXPOSE 8000
