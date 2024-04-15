@@ -1,9 +1,9 @@
 const db = db.getSiblingDB("mydatabase");
 db.users.insertOne({
-  firstName: "Clara",
-  lastName: "Martin",
+  firstname: "Clara",
+  lastname: "Martin",
   email: "clara.martin@example.com",
-  dateOfBirth: "1990-01-01",
+  dateBirth: "1990-01-01",
   postalCode: "75001",
   city: "Paris",
 });

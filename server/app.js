@@ -1,12 +1,17 @@
 const mongoose = require("mongoose");
 const express = require("express");
-//const cors = require("cors");
+const cors = require("cors");
 const dotenv = require("dotenv");
 const User = require("./models/User");
 
 dotenv.config();
 
 const app = express();
+const corsOptions = {
+  origin: "http://localhost:3000",
+  optionsSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const connectDB = async () => {
@@ -35,18 +40,18 @@ app.get("/users", async (req, res) => {
 
 app.post("/users", async (req, res) => {
   try {
-    const { firstName, lastName, email, dateOfBirth, postalCode, city } =
+    const { firstname, lastname, email, dateBirth, postalCode, city } =
       req.body;
     const user = new User({
-      firstName,
-      lastName,
+      firstname,
+      lastname,
       email,
-      dateOfBirth,
+      dateBirth,
       postalCode,
       city,
     });
     await user.save();
-    res.json({ success: true });
+    res.json({ user, success: true });
   } catch (error) {
     res.status(500).send(error.message);
   }

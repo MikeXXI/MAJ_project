@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
-  firstName: {
+  firstname: {
     type: String,
     required: true,
     trim: true, // Removes leading/trailing whitespaces
   },
-  lastName: {
+  lastname: {
     type: String,
     required: true,
     trim: true,
@@ -17,7 +17,7 @@ const userSchema = new Schema({
     unique: true,
     lowercase: true, // Convert email to lowercase for case-insensitive matching
   },
-  dateOfBirth: {
+  dateBirth: {
     type: Date,
     required: true,
   },

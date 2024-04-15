@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   isValidFirstName,
   isValidLastName,
@@ -10,6 +11,7 @@ import {
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { calculateAge } from "../utils/calculateAge";
+import axios from "axios";
 
 /**
  * Functional component representing a registration form.
@@ -17,7 +19,7 @@ import { calculateAge } from "../utils/calculateAge";
  * @component
  * @returns {JSX.Element} The rendered form component.
  */
-export default function Form() {
+export default function Form({ port, getUsers }) {
   /**
    * State to manage form data and errors.
    * @type {Object}
@@ -83,7 +85,7 @@ export default function Form() {
   /**
    * Handles form submission, validates inputs, and saves data if valid.
    */
-  const handleSave = () => {
+  const handleSave = async () => {
     const formErrors = {};
     Object.keys(formData).forEach((name) => {
       const errorMessage = validateInput(name, formData[name]);
@@ -96,21 +98,21 @@ export default function Form() {
     const isAdult = age > 18;
 
     if (isAdult && Object.values(formErrors).every((error) => !error)) {
-      localStorage.setItem("userData", JSON.stringify(formData));
-      toast.success("Inscription réussie !");
-      setFormData({
-        firstname: "",
-        lastname: "",
-        dateBirth: "",
-        email: "",
-        postalCode: "",
-        city: "",
-      });
+      try {
+        const api = axios.create({
+          baseURL: `http://localhost:${port}`,
+        });
+
+        const response = await api.post("/users", formData);
+        getUsers();
+        toast.success("Inscription réussie !");
+        console.log("User created:", response.data);
+      } catch (error) {
+        console.error("Error creating user:", error);
+      }
     } else {
       if (!isAdult) {
-        toast.error("Vous devez être majeur pour vous inscrire.", {
-          autoClose: 5000,
-        });
+        toast.error("Vous devez être majeur pour vous inscrire.", {});
       } else {
         toast.error("Veuillez remplir correctement les champs.");
       }
@@ -126,6 +128,7 @@ export default function Form() {
   return (
     <div className="flex items-center justify-center h-screen">
       <form
+        onSubmit={(e) => e.preventDefault()}
         data-testid="form"
         className="w-full max-w-lg"
         title="form"

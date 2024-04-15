@@ -8,10 +8,10 @@ services:
     volumes:
       - ./mongofiles/:/docker-entrypoint-initdb.d/
     restart: always
-    environment:
-      #   MONGO_INITDB_ROOT_USERNAME: <admin-user>
-      #   MONGO_INITDB_ROOT_PASSWORD: <admin-password>
-      # MONGO_INITDB_DATABASE: mydatabase
+    # environment:
+    #   #   MONGO_INITDB_ROOT_USERNAME: <admin-user>
+    #   #   MONGO_INITDB_ROOT_PASSWORD: <admin-password>
+    #   # MONGO_INITDB_DATABASE: mydatabase
 
   mongo-express:
     image: mongo-express
@@ -35,6 +35,7 @@ services:
     environment:
       - MONGO_HOST=mongo
       - MONGO_DATABASE
+      - PORT=8000
       # - MONGO_USER
       # - MONGO_PASS
     ports:
@@ -42,3 +43,19 @@ services:
     depends_on:
       - mongo
     command: node server.js
+
+  react:
+    image: react
+    build:
+      context: ./my-app
+      dockerfile: ./DockerfileReact
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_SERVER_PORT=8000
+    volumes:
+      - ./my-app:/app
+      - /app/node_modules
+    depends_on:
+      - server
+    command: npm start
