@@ -6,7 +6,16 @@ import axios from "axios";
 
 function App() {
   const port = process.env.REACT_APP_SERVER_PORT;
-  let [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [password, setPassword] = useState("");
+  const [clickedIndex, setClickedIndex] = useState({});
+
+  const handleClick = (index) => () => {
+    setClickedIndex((state) => ({
+      ...state, // <-- copy previous state
+      [index]: !state[index], // <-- update value by index key
+    }));
+  };
 
   useEffect(() => {
     getUsers();
@@ -26,45 +35,66 @@ function App() {
 
   const deleteUser = async (id) => {
     try {
-      const api = axios.create({
-        baseURL: `http://localhost:${port}`,
+      await axios.delete(`http://localhost:${port}/users/${id}`, {
+        data: { password: password },
       });
-      await api.delete(`/users/${id}`);
+
       getUsers();
+      setClickedIndex({});
+      // Clear password input and hide it
+      setPassword("");
     } catch (error) {
       console.error(error);
     }
   };
+
   return (
     <div className="App">
       <ToastContainer />
-      <Form port={port} getUsers={() => getUsers()} />
-      <h1
-        data-testid="title"
-        className="text-3xl font-bold mb-7 flex items-center justify-center text-gray-800
-      "
-      >
+      <Form port={port} getUsers={getUsers} />
+      <h1 className="text-3xl font-bold mb-7 flex items-center justify-center text-gray-800">
         Users manager
       </h1>
-      <br></br>
       {users.map((user, index) => (
-        <div key={index} className="user-item">
+        <div key={index} className="user-item mb-4 p-4 bg-gray-100 rounded">
           <p>Nom: {user.lastname}</p>
           <p>Prénom: {user.firstname}</p>
           <p>Email: {user.email}</p>
           <p>Date de naissance: {user.dateBirth}</p>
           <p>Ville: {user.city}</p>
           <p>Code postal: {user.postalCode}</p>
-          <br></br>
           <button
-            className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-10 border-b-4 border-red-700 hover:border-red-500 rounded"
-            onClick={() => deleteUser(user._id)}
-            data-testid="deleteButton"
+            className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded"
+            onClick={handleClick(index)}
+            data-testid={`deleteButton-${index}`}
             name="delete"
           >
             Supprimer
           </button>
-          <br></br>
+          {clickedIndex[index] && (
+            <div className="mt-2 flex flex-col items-center">
+              <input
+                data-testid={`inputPassword-${index}`}
+                className="w-full bg-gray-200 text-gray-700 border rounded py-2 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 mb-2"
+                id={`password-${index}`}
+                type="password"
+                required
+                placeholder="Mot de passe"
+                aria-label="Mot de passe"
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 border-b-4 border-red-700 hover:border-red-500 rounded"
+                onClick={() => deleteUser(user._id, index)}
+                data-testid={`confirmButton-${index}`}
+                name="confirm"
+              >
+                Confirmer
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>

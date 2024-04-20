@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const User = require("./models/User");
+const bcrypt = require("bcrypt");
 
 dotenv.config();
 
@@ -59,9 +60,23 @@ app.post("/users", async (req, res) => {
 
 app.delete("/users/:id", async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) throw new Error("User not found");
-    res.json({ success: true });
+    const serverPassword = await bcrypt.hash(
+      `${process.env.SERVER_PASSWORD}`,
+      10
+    );
+    const isPasswordCorrect = await bcrypt.compare(
+      req.body.password,
+      serverPassword
+    );
+
+    if (isPasswordCorrect) {
+      const user = await User.findByIdAndDelete(req.params.id);
+      if (!user) throw new Error("User not found");
+      res.json({ success: true });
+    } else {
+      // Si le mot de passe n'est pas correct, renvoyer un code d'erreur et un message approprié
+      res.status(401).json({ success: false, message: "Wrong password" });
+    }
   } catch (error) {
     res.status(500).send(error.message);
   }
