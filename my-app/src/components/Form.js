@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 import {
   isValidFirstName,
   isValidLastName,
@@ -102,7 +102,7 @@ export default function Form({ port, getUsers }) {
         const api = axios.create({
           baseURL: `http://localhost:${port}`,
         });
-    
+
         const response = await api.post("/users", formData);
         getUsers();
         toast.success("Inscription réussie !");
@@ -113,7 +113,7 @@ export default function Form({ port, getUsers }) {
     } else if (!isAdult) {
       toast.error("Vous devez être majeur pour vous inscrire.");
     }
-  }
+  };
 
   /**
    * Renders the form component.
@@ -398,7 +398,6 @@ export default function Form({ port, getUsers }) {
     </div>
   );
 }
-
 
 Form.propTypes = {
   port: PropTypes.string.isRequired,
