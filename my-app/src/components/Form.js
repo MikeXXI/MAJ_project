@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import PropTypes from 'prop-types';
 import {
   isValidFirstName,
   isValidLastName,
@@ -102,7 +102,7 @@ export default function Form({ port, getUsers }) {
         const api = axios.create({
           baseURL: `http://localhost:${port}`,
         });
-
+    
         const response = await api.post("/users", formData);
         getUsers();
         toast.success("Inscription réussie !");
@@ -110,14 +110,10 @@ export default function Form({ port, getUsers }) {
       } catch (error) {
         console.error("Error creating user:", error);
       }
-    } else {
-      if (!isAdult) {
-        toast.error("Vous devez être majeur pour vous inscrire.", {});
-      } else {
-        toast.error("Veuillez remplir correctement les champs.");
-      }
+    } else if (!isAdult) {
+      toast.error("Vous devez être majeur pour vous inscrire.");
     }
-  };
+  }
 
   /**
    * Renders the form component.
@@ -126,13 +122,12 @@ export default function Form({ port, getUsers }) {
    */
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center ">
       <form
         onSubmit={(e) => e.preventDefault()}
         data-testid="form"
         className="w-full max-w-lg"
         title="form"
-        description="form"
       >
         <h2
           className="text-3xl font-bold mb-7 flex items-center justify-center text-gray-800
@@ -350,7 +345,7 @@ export default function Form({ port, getUsers }) {
         </div>
         <div className="flex items-center justify-center mt-4">
           <button
-            className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-10 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-300 ease-in-out transform hover:-translate-y-1"
             onClick={handleSave}
             data-testid="saveButton"
             name="validate"
@@ -403,3 +398,9 @@ export default function Form({ port, getUsers }) {
     </div>
   );
 }
+
+
+Form.propTypes = {
+  port: PropTypes.string.isRequired,
+  getUsers: PropTypes.func.isRequired,
+};

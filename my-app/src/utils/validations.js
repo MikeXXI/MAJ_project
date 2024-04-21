@@ -5,12 +5,18 @@
  * @throws {Error} If the first name is missing or contains invalid characters.
  * @return {string} An error message if the validation fails, otherwise an empty string.
  */
-export const isValidFirstName = (firstname) =>
-  !firstname.trim()
-    ? "Champ obligatoire."
-    : /^[a-zA-ZÀ-ÿ-' ]+$/u.test(firstname)
-    ? ""
-    : "Les caractères spéciaux et chiffres ne sont pas autorisés.";
+export const isValidFirstName = (firstname) => {
+  if (!firstname.trim()) {
+    return "Champ obligatoire.";
+  } else {
+    const isValid = /^[a-zA-ZÀ-ÿ-' ]+$/u.test(firstname);
+    if (isValid) {
+      return "";
+    } else {
+      return "Les caractères spéciaux et chiffres ne sont pas autorisés.";
+    }
+  }
+};
 
 /**
  * Validates the last name field.
@@ -19,12 +25,18 @@ export const isValidFirstName = (firstname) =>
  * @throws {Error} If the last name is missing or contains invalid characters.
  * @return {string} An error message if the validation fails, otherwise an empty string.
  */
-export const isValidLastName = (lastname) =>
-  !lastname.trim()
-    ? "Champ obligatoire."
-    : /^[a-zA-ZÀ-ÿ-' ]+$/u.test(lastname)
-    ? ""
-    : "Les caractères spéciaux et chiffres ne sont pas autorisés.";
+export const isValidLastName = (lastname) => {
+  if (!lastname.trim()) {
+    return "Champ obligatoire.";
+  } else {
+    const isValid = /^[a-zA-ZÀ-ÿ-' ]+$/u.test(lastname);
+    if (isValid) {
+      return "";
+    } else {
+      return "Les caractères spéciaux et chiffres ne sont pas autorisés.";
+    }
+  }
+};
 
 /**
  * Validates the email field.
@@ -33,12 +45,18 @@ export const isValidLastName = (lastname) =>
  * @throws {Error} If the email is missing, not valid, or contains invalid characters.
  * @return {string} An error message if the validation fails, otherwise an empty string.
  */
-export const isValidEmail = (email) =>
-  !email.trim()
-    ? "Champ obligatoire."
-    : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ? ""
-    : "L'email est invalide.";
+export const isValidEmail = (email) => {
+  if (!email.trim()) {
+    return "Champ obligatoire.";
+  } else {
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (isValid) {
+      return "";
+    } else {
+      return "L'email est invalide.";
+    }
+  }
+};
 
 /**
  * Validates the postal code field.
@@ -47,12 +65,18 @@ export const isValidEmail = (email) =>
  * @throws {Error} If the postal code is missing, not a 5-digit number, or contains invalid characters.
  * @return {string} An error message if the validation fails, otherwise an empty string.
  */
-export const isValidPostalCode = (postalCode) =>
-  !postalCode.trim()
-    ? "Champ obligatoire."
-    : /^\d{5}$/.test(postalCode)
-    ? ""
-    : "Le code postal doit être composé de 5 chiffres.";
+export const isValidPostalCode = (postalCode) => {
+  if (!postalCode.trim()) {
+    return "Champ obligatoire.";
+  } else {
+    const isValid = /^\d{5}$/.test(postalCode);
+    if (isValid) {
+      return "";
+    } else {
+      return "Le code postal doit être composé de 5 chiffres.";
+    }
+  }
+};
 
 /**
  * Validates the city field.
@@ -61,12 +85,20 @@ export const isValidPostalCode = (postalCode) =>
  * @throws {Error} If the city is missing or contains invalid characters.
  * @return {string} An error message if the validation fails, otherwise an empty string.
  */
-export const isValidCity = (city) =>
-  !city.trim()
-    ? "Champ obligatoire."
-    : /^[a-zA-ZÀ-ÿ-]+$/u.test(city)
-    ? ""
-    : "Les caractères spéciaux et chiffres ne sont pas autorisés.";
+export const isValidCity = (city) => {
+  if (!city.trim()) {
+    return "Champ obligatoire.";
+  } else {
+    const trimmedCity = city.trim();
+    const regex = /^[a-zA-ZÀ-ÿ-' ]+$/u;
+    const isValid = regex.test(trimmedCity);
+    if (isValid) {
+      return "";
+    } else {
+      return "Les caractères spéciaux et chiffres ne sont pas autorisés.";
+    }
+  }
+};
 
 /**
  * Validates the date of birth field.
