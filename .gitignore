@@ -20,3 +20,8 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# environnement python
+/server/__pycache__
+/server/models/__pycache__/
+/server/.env

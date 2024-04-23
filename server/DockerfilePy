@@ -1,0 +1,7 @@
+FROM python:3.8
+WORKDIR /server
+PATH /server/.venv/bin:$PATH
+RUN python -m venv .venv
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+EXPOSE 8000
