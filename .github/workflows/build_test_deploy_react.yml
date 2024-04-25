@@ -1,19 +1,19 @@
 name: Build, Test and Deploy React Application
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ develop ]
+    branches: [develop]
   pull_request:
-    branches: [ develop ]
+    branches: [develop]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build_test:
-    permissions:                # Job-level permissions configuration starts here
-        contents: write           # 'write' access to repository contents
-        pull-requests: write      # 'write' access to pull requests
+    permissions: # Job-level permissions configuration starts here
+      contents: write # 'write' access to repository contents
+      pull-requests: write # 'write' access to pull requests
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -34,8 +34,8 @@ jobs:
           cd my-app
           npm install
           npm ci
-          npm test  
-      - name:  Set up Docker Environment - mongo / nodejs
+          npm test
+      - name: Set up Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
       - name: Fix permissions
         run: |
@@ -43,15 +43,16 @@ jobs:
           sudo chmod -R u+rw .
       - name: Install Dependencies
         run: |
-            cd server
-            npm install
+          cd server
+          npm install
       - name: Run Tests
         run: |
-            cd server
-            npm test
-        
+          cd server
+          npm test
       - name: Run e2e tests with cypress
-        uses: cypress-io/github-action@v6
+        run: |
+          cd my-app
+          npx cypress open
       - name: Shutdown Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml down
       # - name: Build the stack mysql - python
@@ -87,8 +88,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-         path: my-app/build
-         if-no-files-found: error
+          path: my-app/build
+          if-no-files-found: error
 
   # Deploy job
   deploy:
@@ -100,17 +101,17 @@ jobs:
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-    
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+
     # Add a dependency to the build job
     needs: build_test
     # Specify runner + deployment step
     steps:
-    #  - name: Set env
-    #    run: |
-    #      npm i -g semver
-    #      echo "GITHUB_VERSION_BUILD=$(echo $(semver 0.1.1 -i prerelease --preid ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}))" >> $GITHUB_ENV
+      #  - name: Set env
+      #    run: |
+      #      npm i -g semver
+      #      echo "GITHUB_VERSION_BUILD=$(echo $(semver 0.1.1 -i prerelease --preid ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}))" >> $GITHUB_ENV
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
