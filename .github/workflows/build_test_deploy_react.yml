@@ -80,15 +80,15 @@ jobs:
           npm run jsdoc
           npm run build --if-present
 
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-            # Upload entire repository
-          path: build
-          if-no-files-found: error
+      # - name: Setup Pages
+      #   id: pages
+      #   uses: actions/configure-pages@v3
+      # - name: Upload artifact
+      #   uses: actions/upload-pages-artifact@v2
+      #   with:
+      #       # Upload entire repository
+      #     path: build
+      #     if-no-files-found: error
   
    
 
