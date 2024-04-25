@@ -40,6 +40,7 @@ jobs:
       - name: api test
         run: |
           cd server
+          console.log("api test")
           npm install 
           npm ci
           npm test
