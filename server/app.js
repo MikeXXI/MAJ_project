@@ -33,7 +33,7 @@ connectDB();
 app.get("/users", async (req, res) => {
   try {
     const users = await User.find();
-    res.json(users);
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -52,7 +52,7 @@ app.post("/users", async (req, res) => {
       city,
     });
     await user.save();
-    res.json({ user, success: true });
+    res.status(200).json({ user, success: true });
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -72,9 +72,8 @@ app.delete("/users/:id", async (req, res) => {
     if (isPasswordCorrect) {
       const user = await User.findByIdAndDelete(req.params.id);
       if (!user) throw new Error("User not found");
-      res.json({ success: true });
+      res.status(200).json({ success: true });
     } else {
-      // Si le mot de passe n'est pas correct, renvoyer un code d'erreur et un message approprié
       res.status(401).json({ success: false, message: "Wrong password" });
     }
   } catch (error) {
