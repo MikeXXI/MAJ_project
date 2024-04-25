@@ -37,6 +37,10 @@ jobs:
           npm test  
       - name: Build the stack mongo - nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
+      - name: Fix permissions
+        run: |
+          sudo chown -R $(whoami) .
+          sudo chmod -R u+rw .
       - name: api test
         run: |
           cd server
