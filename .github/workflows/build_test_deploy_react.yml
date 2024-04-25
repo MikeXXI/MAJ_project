@@ -41,11 +41,15 @@ jobs:
         run: |
           sudo chown -R $(whoami) .
           sudo chmod -R u+rw .
-      - name: api test
+      - name: Install Dependencies
         run: |
-          cd server
-          npm install
-          npm test
+            cd server
+            npm install
+      - name: Run Tests
+        run: |
+            cd server
+            npm test
+        
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
       - name: Shutdown Docker Environment - mongo / nodejs
