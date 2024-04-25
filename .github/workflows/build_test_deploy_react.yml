@@ -34,6 +34,7 @@ jobs:
           cd my-app
           npm install
           npm ci
+          npm i --save-dev @testing-library/jest-dom
           npm test  
       - name: Build the stack mongo - nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
