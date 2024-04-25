@@ -1,0 +1,4 @@
+node_modules
+DockerfileNodejs
+*.py
+.dockerignore

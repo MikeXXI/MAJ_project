@@ -10,6 +10,7 @@ import {
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { calculateAge } from "../utils/calculateAge";
+import axios from "axios";
 
 /**
  * Functional component representing a registration form.
@@ -17,7 +18,7 @@ import { calculateAge } from "../utils/calculateAge";
  * @component
  * @returns {JSX.Element} The rendered form component.
  */
-export default function Form() {
+export default function Form({ getUsers }) {
   /**
    * State to manage form data and errors.
    * @type {Object}
@@ -61,29 +62,24 @@ export default function Form() {
    * @param {string} value - The value of the input.
    * @returns {string} The validation error message, if any.
    */
+  const validators = {
+    firstname: isValidFirstName,
+    lastname: isValidLastName,
+    email: isValidEmail,
+    postalCode: isValidPostalCode,
+    city: isValidCity,
+    dateBirth: isValidDateBirth,
+  };
+
   const validateInput = (name, value) => {
-    switch (name) {
-      case "firstname":
-        return isValidFirstName(value);
-      case "lastname":
-        return isValidLastName(value);
-      case "email":
-        return isValidEmail(value);
-      case "postalCode":
-        return isValidPostalCode(value);
-      case "city":
-        return isValidCity(value);
-      case "dateBirth":
-        return isValidDateBirth(value);
-      default:
-        return "";
-    }
+    const validator = validators[name];
+    return validator ? validator(value) : "";
   };
 
   /**
    * Handles form submission, validates inputs, and saves data if valid.
    */
-  const handleSave = () => {
+  const handleSave = async () => {
     const formErrors = {};
     Object.keys(formData).forEach((name) => {
       const errorMessage = validateInput(name, formData[name]);
@@ -91,29 +87,25 @@ export default function Form() {
     });
 
     setErrors(formErrors);
-
+    const port = process.env.REACT_APP_SERVER_PORT;
     const age = calculateAge({ birth: formData.dateBirth });
     const isAdult = age > 18;
 
     if (isAdult && Object.values(formErrors).every((error) => !error)) {
-      localStorage.setItem("userData", JSON.stringify(formData));
-      toast.success("Inscription réussie !");
-      setFormData({
-        firstname: "",
-        lastname: "",
-        dateBirth: "",
-        email: "",
-        postalCode: "",
-        city: "",
-      });
-    } else {
-      if (!isAdult) {
-        toast.error("Vous devez être majeur pour vous inscrire.", {
-          autoClose: 5000,
+      try {
+        const api = axios.create({
+          baseURL: `http://localhost:${port}`,
         });
-      } else {
-        toast.error("Veuillez remplir correctement les champs.");
+
+        const response = await api.post("/users", formData);
+        toast.success("Inscription réussie !");
+        getUsers();
+        console.log("User created:", response.data);
+      } catch (error) {
+        console.error("Error creating user:", error);
       }
+    } else if (!isAdult) {
+      toast.error("Vous devez être majeur pour vous inscrire.");
     }
   };
 
@@ -124,12 +116,12 @@ export default function Form() {
    */
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center ">
       <form
+        onSubmit={(e) => e.preventDefault()}
         data-testid="form"
         className="w-full max-w-lg"
         title="form"
-        description="form"
       >
         <h2
           className="text-3xl font-bold mb-7 flex items-center justify-center text-gray-800
@@ -347,7 +339,7 @@ export default function Form() {
         </div>
         <div className="flex items-center justify-center mt-4">
           <button
-            className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-10 border-b-4 border-blue-700 hover:border-blue-500 rounded"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-300 ease-in-out transform hover:-translate-y-1"
             onClick={handleSave}
             data-testid="saveButton"
             name="validate"
