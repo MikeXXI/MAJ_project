@@ -9,10 +9,10 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.8",
     "@mui/material": "^5.15.7",
-    "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.5.2",
     "axios": "^1.6.7",
+    "axios-mock-adapter": "^1.22.0",
     "babel-preset-react-app": "^10.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -58,8 +58,10 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.0",
+    "@testing-library/jest-dom": "^6.4.2",
     "cypress": "^13.8.0",
     "gh-pages": "^6.1.1",
+    "identity-obj-proxy": "^3.0.0",
     "jest-localstorage-mock": "^2.4.26",
     "jsdoc": "^4.0.2",
     "react-test-renderer": "^18.2.0"

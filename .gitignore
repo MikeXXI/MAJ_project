@@ -2,6 +2,8 @@
 
 # dependencies
 node_modules
+/server/node_modules
+/server/__pycache__
 /.pnp
 .pnp.js
 
@@ -10,6 +12,8 @@ node_modules
 
 # production
 /build
+/publics/docs
+
 
 # misc
 .DS_Store

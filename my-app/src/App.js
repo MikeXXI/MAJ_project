@@ -1,5 +1,4 @@
-import "./App.css";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import Form from "./components/Form";
 import axios from "axios";
@@ -10,7 +9,11 @@ function App() {
   const [password, setPassword] = useState("");
   const [clickedIndex, setClickedIndex] = useState({});
 
-  const getUsers = useCallback(async () => {
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  async function getUsers() {
     try {
       const api = axios.create({
         baseURL: `http://localhost:${port}`,
@@ -20,11 +23,7 @@ function App() {
     } catch (error) {
       console.error(error);
     }
-  }, [port]);
-
-  useEffect(() => {
-    getUsers();
-  }, [getUsers]);
+  }
 
   const toggleDelete = (index) => {
     setClickedIndex((prevState) => ({
@@ -38,13 +37,13 @@ function App() {
       await axios.delete(`http://localhost:${port}/users/${id}`, {
         data: { password: password },
       });
-      getUsers();
       setPassword("");
       setClickedIndex({});
-      toast.success("Utilisateur supprimé avec succès");
+      getUsers();
+      toast.success("Utilisateur supprimé avec succès !");
     } catch (error) {
       console.error(error);
-      toast.error("Erreur lors de la suppression de l'utilisateur");
+      toast.error("Erreur lors de la suppression de l'utilisateur !");
     }
   };
   function formatDate(dateString) {
@@ -74,7 +73,7 @@ function App() {
           className="md:w-1/2 p-4 rounded-lg shadow-lg bg-white flex flex-col justify-center items-center"
           style={{ minHeight: "100vh" }}
         >
-          <Form port={port} getUsers={getUsers} />
+          <Form getUsers={getUsers} />
         </div>
         <div className=" md:w-1/2 p-4 overflow-auto">
           <h2 className="text-3xl font-bold mb-7 flex items-center justify-center text-gray-800">

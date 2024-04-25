@@ -14,20 +14,20 @@ The project is structured as follows, facilitating separation of concerns and mo
 
 ```
 .
-├── app                     # React frontend application
+├── my-app                  # React frontend application
+│   ├── coverage            # Coverage 
 │   ├── cypress             # Cypress end-to-end tests
 │   ├── DockerfileReact     # Dockerfile for React application
 │   ...
 ├── server                  # Backend services
 │   ├── DockerfileNodejs    # Dockerfile for Node.js setup
 │   ├── DockerfilePython    # Dockerfile for Python setup
-│   ├── server.js           # Node.js server script
-│   ├── server.py           # Python server script
+│   ├── app.js              # Node.js server script
+│   ├── models  
+│       ├─── user.js        # MongoDB seed data
+│   ├── main.py             # Python server script
 ├── sqlfiles                # SQL migration scripts for MySQL
 │   ├── migrate-v001.sql
-│   ...
-├── mongofiles              # MongoDB seed data
-│   ├── migrate-v001.json
 │   ...
 ├── docker-compose-nodejs-mongodb.yml # Docker Compose for Node.js + MongoDB
 ├── docker-compose-python-mysql.yml   # Docker Compose for Python + MySQL
@@ -206,11 +206,20 @@ This project includes unit, integration, and end-to-end tests. Below are detaile
 ### Frontend (React)
 
 _Unit and Integration Tests_
-We use Jest and React Testing Library for frontend testing. To run these tests, navigate to the app directory and execute:
+We use Jest and React Testing Library for frontend testing.
+
+@testing-library/react for rendering components and interacting with the DOM.
+@testing-library/jest-dom for additional matchers.
+Mocking libraries like axios-mock-adapter for intercepting axios requests.
+jest for running your tests.
+
+ To run these tests, navigate to the app directory and execute:
 
 ```
 cd app
 npm install
+npm install @testing-library/react @testing-library/jest-dom jest axios-mock-adapter react-toastify
+npm install --save-dev @testing-library/jest-dom
 npm test
 ```
 

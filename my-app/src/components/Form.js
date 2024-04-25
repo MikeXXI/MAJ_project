@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import {
   isValidFirstName,
   isValidLastName,
@@ -19,7 +18,7 @@ import axios from "axios";
  * @component
  * @returns {JSX.Element} The rendered form component.
  */
-export default function Form({ port, getUsers }) {
+export default function Form({ getUsers }) {
   /**
    * State to manage form data and errors.
    * @type {Object}
@@ -63,23 +62,18 @@ export default function Form({ port, getUsers }) {
    * @param {string} value - The value of the input.
    * @returns {string} The validation error message, if any.
    */
+  const validators = {
+    firstname: isValidFirstName,
+    lastname: isValidLastName,
+    email: isValidEmail,
+    postalCode: isValidPostalCode,
+    city: isValidCity,
+    dateBirth: isValidDateBirth,
+  };
+
   const validateInput = (name, value) => {
-    switch (name) {
-      case "firstname":
-        return isValidFirstName(value);
-      case "lastname":
-        return isValidLastName(value);
-      case "email":
-        return isValidEmail(value);
-      case "postalCode":
-        return isValidPostalCode(value);
-      case "city":
-        return isValidCity(value);
-      case "dateBirth":
-        return isValidDateBirth(value);
-      default:
-        return "";
-    }
+    const validator = validators[name];
+    return validator ? validator(value) : "";
   };
 
   /**
@@ -93,7 +87,7 @@ export default function Form({ port, getUsers }) {
     });
 
     setErrors(formErrors);
-
+    const port = process.env.REACT_APP_SERVER_PORT;
     const age = calculateAge({ birth: formData.dateBirth });
     const isAdult = age > 18;
 
@@ -104,8 +98,8 @@ export default function Form({ port, getUsers }) {
         });
 
         const response = await api.post("/users", formData);
-        getUsers();
         toast.success("Inscription réussie !");
+        getUsers();
         console.log("User created:", response.data);
       } catch (error) {
         console.error("Error creating user:", error);
@@ -398,8 +392,3 @@ export default function Form({ port, getUsers }) {
     </div>
   );
 }
-
-Form.propTypes = {
-  port: PropTypes.string.isRequired,
-  getUsers: PropTypes.func.isRequired,
-};
