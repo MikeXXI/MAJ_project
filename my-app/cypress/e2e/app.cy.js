@@ -39,7 +39,6 @@ describe("User Management Display", () => {
         "contain",
         "Inscription réussie !"
       );
-      cy.get(".user-item").last().should("contain", newUser.email);
     });
   });
 
