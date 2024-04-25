@@ -6,7 +6,8 @@ node_modules
 /server/__pycache__
 /.pnp
 .pnp.js
-
+my-app/package-lock.json
+my-app/package.json
 # testing
 /coverage
 
