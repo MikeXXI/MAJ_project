@@ -35,6 +35,16 @@ describe("Form component", () => {
       expect(screen.getByTestId("errorLastname")).toBeInTheDocument();
     });
   });
+  describe("Email input validation", () => {
+    it("should display error for invalid email format", async () => {
+      const emailInput = screen.getByTestId("inputEmail");
+      fireEvent.change(emailInput, { target: { value: "invalidemail" } });
+      fireEvent.blur(emailInput);
+
+      const errorMessage = await screen.findByText("L'email est invalide.");
+      expect(errorMessage).toBeInTheDocument();
+    });
+  });
 
   describe(" Saving User Data ", () => {
     it("should save the user in local storage", () => {

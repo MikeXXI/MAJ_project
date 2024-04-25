@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "superagent": "^8.1.2",
+    "supertest": "^6.3.4"
+  },
+  "scripts": {
+    "test": "jest --forceExit"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1"
+  }
+}
