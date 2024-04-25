@@ -3,3 +3,4 @@ WORKDIR /server
 ENV PATH /server/node_modules/.bin:$PATH
 RUN npm install mongoose express dotenv cors bcrypt
 EXPOSE 8000
+
