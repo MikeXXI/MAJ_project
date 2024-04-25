@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Form.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Form.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from "react";
+import {
+  isValidFirstName,
+  isValidLastName,
+  isValidEmail,
+  isValidCity,
+  isValidDateBirth,
+  isValidPostalCode,
+} from "../utils/validations";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { calculateAge } from "../utils/calculateAge";
+import axios from "axios";
+
+/**
+ * Functional component representing a registration form.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered form component.
+ */
+export default function Form({ getUsers }) {
+  /**
+   * State to manage form data and errors.
+   * @type {Object}
+   * @property {Object} formData - Form input values.
+   * @property {Object} errors - Validation errors for form inputs.
+   */
+  const [formData, setFormData] = useState({
+    firstname: "",
+    lastname: "",
+    dateBirth: "",
+    email: "",
+    postalCode: "",
+    city: "",
+  });
+
+  const [errors, setErrors] = useState({
+    firstname: "",
+    lastname: "",
+    dateBirth: "",
+    email: "",
+    postalCode: "",
+    city: "",
+  });
+
+  /**
+   * Handles input change events and updates form data and errors.
+   *
+   * @param {Object} e - The event object.
+   */
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    const errorMessage = validateInput(name, value);
+    setErrors({ ...errors, [name]: errorMessage });
+  };
+
+  /**
+   * Validates input based on its name.
+   *
+   * @param {string} name - The name of the input.
+   * @param {string} value - The value of the input.
+   * @returns {string} The validation error message, if any.
+   */
+  const validators = {
+    firstname: isValidFirstName,
+    lastname: isValidLastName,
+    email: isValidEmail,
+    postalCode: isValidPostalCode,
+    city: isValidCity,
+    dateBirth: isValidDateBirth,
+  };
+
+  const validateInput = (name, value) => {
+    const validator = validators[name];
+    return validator ? validator(value) : "";
+  };
+
+  /**
+   * Handles form submission, validates inputs, and saves data if valid.
+   */
+  const handleSave = async () => {
+    const formErrors = {};
+    Object.keys(formData).forEach((name) => {
+      const errorMessage = validateInput(name, formData[name]);
+      formErrors[name] = errorMessage;
+    });
+
+    setErrors(formErrors);
+    const port = process.env.REACT_APP_SERVER_PORT;
+    const age = calculateAge({ birth: formData.dateBirth });
+    const isAdult = age > 18;
+
+    if (isAdult &amp;&amp; Object.values(formErrors).every((error) => !error)) {
+      try {
+        const api = axios.create({
+          baseURL: `http://localhost:${port}`,
+        });
+
+        const response = await api.post("/users", formData);
+        toast.success("Inscription réussie !");
+        getUsers();
+        console.log("User created:", response.data);
+      } catch (error) {
+        console.error("Error creating user:", error);
+      }
+    } else if (!isAdult) {
+      toast.error("Vous devez être majeur pour vous inscrire.");
+    }
+  };
+
+  /**
+   * Renders the form component.
+   *
+   * @returns {JSX.Element} The rendered form component.
+   */
+
+  return (
+    &lt;div className="flex items-center justify-center ">
+      &lt;form
+        onSubmit={(e) => e.preventDefault()}
+        data-testid="form"
+        className="w-full max-w-lg"
+        title="form"
+      >
+        &lt;h2
+          className="text-3xl font-bold mb-7 flex items-center justify-center text-gray-800
+      "
+        >
+          FORMULAIRE D'INSCRIPTION
+        &lt;/h2>
+        &lt;div className="flex flex-wrap -mx-3 mb-6">
+          &lt;div
+            data-testid="divPrenom"
+            className="w-full md:w-1/2 px-3 mb-6 md:mb-0"
+          >
+            &lt;label
+              data-testid="labelPrenom"
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="firstname"
+            >
+              Prénom*
+            &lt;/label>
+
+            &lt;input
+              data-testid="inputFirstname"
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.firstname ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              id="firstname"
+              type="text"
+              required
+              placeholder="John"
+              aria-label="Prénom"
+              name="firstname"
+              value={formData.firstname}
+              onChange={handleInputChange}
+            />
+            &lt;p>
+              &lt;span
+                data-testid="errorFirstname"
+                className="text-red-500 text-xs italic"
+              >
+                {errors.firstname}
+              &lt;/span>
+            &lt;/p>
+          &lt;/div>
+
+          &lt;div
+            className="w-full md:w-1/2 px-3 mb-6 md:mb-0"
+            data-testid="divNom"
+          >
+            &lt;label
+              data-testid="labelLastname"
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="lastname"
+            >
+              Nom*
+            &lt;/label>
+            &lt;input
+              data-testid="inputLastname"
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.lastname ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              id="lastname"
+              type="text"
+              aria-label="Nom"
+              placeholder="Doe"
+              required
+              name="lastname"
+              value={formData.lastname}
+              onChange={handleInputChange}
+            />
+            &lt;p>
+              &lt;span
+                data-testid="errorLastname"
+                className="text-red-500 text-xs italic"
+              >
+                {errors.lastname}
+              &lt;/span>
+            &lt;/p>
+          &lt;/div>
+        &lt;/div>
+        &lt;div className="flex flex-wrap -mx-3 mb-6">
+          &lt;div data-testid="divEmail" className="w-full px-3">
+            &lt;label
+              data-testid="labelEmail"
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="email"
+            >
+              Email*
+            &lt;/label>
+            &lt;input
+              data-testid="inputEmail"
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.email ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              id="email"
+              type="email"
+              aria-label="Email"
+              placeholder="John.doe@gmail.com"
+              required
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+            />
+            &lt;p>
+              &lt;span
+                data-testid="errorEmail"
+                className="text-red-500 text-xs italic"
+              >
+                {errors.email}
+              &lt;/span>
+            &lt;/p>
+          &lt;/div>
+        &lt;/div>
+        &lt;div className="flex flex-wrap -mx-3 mb-6">
+          &lt;div className="w-full px-3" data-testid="divDate">
+            &lt;label
+              data-testid="labelDate"
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="dob"
+            >
+              Date de naissance* (18 ans et plus)
+            &lt;/label>
+            &lt;input
+              data-testid="inputDate"
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.dateBirth ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              id="dob"
+              aria-label="Date de naissance"
+              type="date"
+              required
+              name="dateBirth"
+              value={formData.dateBirth}
+              onChange={handleInputChange}
+            />
+            &lt;p>
+              &lt;span
+                data-testid="errorDate"
+                className="text-red-500 text-xs italic"
+              >
+                {errors.dateBirth}
+              &lt;/span>
+            &lt;/p>
+          &lt;/div>
+        &lt;/div>
+        &lt;div className="flex flex-wrap -mx-3 mb-2">
+          &lt;div
+            className="w-full md:w-2/4 px-3 mb-6 md:mb-0"
+            data-testid="divCity"
+          >
+            &lt;label
+              data-testid="labelCity"
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="city"
+            >
+              Ville*
+            &lt;/label>
+            &lt;input
+              data-testid="inputCity"
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.city ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              id="city"
+              type="text"
+              aria-label="Ville"
+              placeholder="Antibes"
+              required
+              name="city"
+              value={formData.city}
+              onChange={handleInputChange}
+            />
+            &lt;p>
+              &lt;span
+                data-testid="errorCity"
+                className="text-red-500 text-xs italic"
+              >
+                {errors.city}
+              &lt;/span>
+            &lt;/p>
+          &lt;/div>
+
+          &lt;div
+            className="w-full md:w-2/4 px-3 mb-6 md:mb-0"
+            data-testid="divZip"
+          >
+            &lt;label
+              data-testid="labelZip"
+              className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              htmlFor="zip"
+            >
+              Code postale*
+            &lt;/label>
+            &lt;input
+              data-testid="inputZip"
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.postalCode ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              id="zip"
+              type="text"
+              placeholder="06600"
+              aria-label="Code postale"
+              required
+              name="postalCode"
+              value={formData.postalCode}
+              onChange={handleInputChange}
+            />
+            &lt;p>
+              &lt;span
+                data-testid="errorZip"
+                className="text-red-500 text-xs italic"
+              >
+                {errors.postalCode}
+              &lt;/span>
+            &lt;/p>
+          &lt;/div>
+        &lt;/div>
+        &lt;div className="flex items-center justify-center mt-4">
+          &lt;button
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow transition-all duration-300 ease-in-out transform hover:-translate-y-1"
+            onClick={handleSave}
+            data-testid="saveButton"
+            name="validate"
+            disabled={
+              !formData.firstname ||
+              !formData.lastname ||
+              !formData.dateBirth ||
+              !formData.email ||
+              !formData.postalCode ||
+              !formData.city ||
+              Object.values(errors).some((error) => error !== "")
+            }
+            style={{
+              cursor:
+                formData.firstname &amp;&amp;
+                formData.lastname &amp;&amp;
+                formData.dateBirth &amp;&amp;
+                formData.email &amp;&amp;
+                formData.postalCode &amp;&amp;
+                formData.city &amp;&amp;
+                !Object.values(errors).some((error) => error !== "")
+                  ? "pointer"
+                  : "not-allowed",
+              opacity:
+                formData.firstname &amp;&amp;
+                formData.lastname &amp;&amp;
+                formData.dateBirth &amp;&amp;
+                formData.email &amp;&amp;
+                formData.postalCode &amp;&amp;
+                formData.city &amp;&amp;
+                !Object.values(errors).some((error) => error !== "")
+                  ? 1
+                  : 0.5,
+            }}
+          >
+            Sauvegarder
+          &lt;/button>
+        &lt;/div>
+        &lt;div
+          data-testid="errorButton"
+          className="flex items-center justify-center mt-0"
+        >
+          {Object.values(errors).some((error) => error !== "") &amp;&amp; (
+            &lt;p className="text-red-500 text-xs italic">
+              Veuillez remplir correctement les champs.
+            &lt;/p>
+          )}
+        &lt;/div>
+      &lt;/form>
+    &lt;/div>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#calculateAge">calculateAge</a></li><li><a href="global.html#isValidCity">isValidCity</a></li><li><a href="global.html#isValidDateBirth">isValidDateBirth</a></li><li><a href="global.html#isValidEmail">isValidEmail</a></li><li><a href="global.html#isValidFirstName">isValidFirstName</a></li><li><a href="global.html#isValidLastName">isValidLastName</a></li><li><a href="global.html#isValidPostalCode">isValidPostalCode</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Apr 25 2024 21:28:07 GMT+0200 (heure d’été d’Europe centrale)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
