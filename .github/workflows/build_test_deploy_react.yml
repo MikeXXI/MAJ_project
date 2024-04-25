@@ -4,9 +4,9 @@ name: Build, Test and Deploy React Application
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [develop]
+    branches: [master]
   pull_request:
-    branches: [develop]
+    branches: [master]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -60,13 +60,14 @@ jobs:
       # - name: Stop the stack mysql - py
       #   run: docker-compose -f docker-compose-v3.yml down
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - name: Set env
-        run: |
-         npm i -g semver
-         echo "GITHUB_VERSION_BUILD=$(echo $(semver 0.1.1 -i prerelease --preid ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}))" >> $GITHUB_ENV
+        uses: codecov/codecov-action@v4.0.1
+        with:
+         token: ${{ secrets.CODECOV_TOKEN }}
+         working-directory: my-app 
+      # - name: Set env
+      #   run: |
+      #    npm i -g semver
+      #    echo "GITHUB_VERSION_BUILD=$(echo $(semver 0.1.1 -i prerelease --preid ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}))" >> $GITHUB_ENV
       #- name: Update versionning
       #  run: |
       #    git config --global user.email ""
