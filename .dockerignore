@@ -4,4 +4,3 @@ build
 Dockerfile
 /server/DockerfileNodejs
 DockerfileReact
-/server/node_modules
