@@ -63,42 +63,35 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
          token: ${{ secrets.CODECOV_TOKEN }}
-         working-directory: my-app 
-      # - name: Set env
-      #   run: |
-      #    npm i -g semver
-      #    echo "GITHUB_VERSION_BUILD=$(echo $(semver 0.1.1 -i prerelease --preid ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}))" >> $GITHUB_ENV
-      #- name: Update versionning
-      #  run: |
-      #    git config --global user.email ""
-      #    git config --global user.name ""
-      #    npm version ${{env.GITHUB_VERSION_BUILD}}
-      #    echo ${{env.GITHUB_VERSION_BUILD}} >> README.md
-      #    git commit -a -m "new version ${{env.GITHUB_VERSION_BUILD}}"
-      - name: Build and docs
-        run: |
-          cd my-app
-          npm run jsdoc
-          npm run build --if-present
+      - name: Save artifact
+        id: save-artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: previous-artifact-v${{ env.BUILD_VERSION }}
+          path: build
 
-      # - name: Setup Pages
-      #   id: pages
-      #   uses: actions/configure-pages@v3
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v2
-      #   with:
-      #       # Upload entire repository
-      #     path: build
-      #     if-no-files-found: error
-  
-   
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          # Upload entire repository
+          path: build
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        env:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: Aiiishaaa/CI-TP1
 
   # Deploy job
   deploy:
     # Deploy to the github-pages environment
     environment:
       name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
+      url: ${{ steps.deployment.outputs.url }}
     runs-on: ubuntu-latest
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
@@ -113,9 +106,15 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
-        with:
-            working-directory: my-app 
-         
-        
 
-       
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        env:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: Aiiishaaa/CI-TP1
+
+      # - name: Update README with previous version and artifact link
+      #   run: |
+      #     PREVIOUS_VERSION=$(grep -oP 'Version actuelle : \K[0-9]+\.[0-9]+\.[0-9]+' README.md)
+      #     echo "Previous Version: $PREVIOUS_VERSION → [Link to the previous artifact](https://github.com/${{ github.repository }}/actions/runs/${{ needs.build_test.outputs.save-artifact }}/artifacts)" >> README.md
+      #   shell: bash
