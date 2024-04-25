@@ -45,14 +45,17 @@ jobs:
         run: |
           cd server
           npm install
-      - name: Run Tests
+      - name: Run server tests
         run: |
           cd server
           npm test
       - name: Run e2e tests with cypress
-        run: |
-          cd my-app
-          npx cypress open
+        uses: cypress-io/github-action@v6
+        with:
+            working-directory: my-app 
+            
+      
+  
       - name: Shutdown Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml down
       # - name: Build the stack mysql - python

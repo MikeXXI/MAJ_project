@@ -1,0 +1,14 @@
+{
+    "source": {
+        "include": [
+            ".",
+            "README.md"
+        ],
+        "exclude": [
+            "node_modules/"
+        ]
+    },
+    "plugins": [
+        "plugins/markdown"
+    ]
+}
