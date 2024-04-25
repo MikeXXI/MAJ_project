@@ -40,9 +40,8 @@ jobs:
       - name: api test
         run: |
           cd server
-          console.log("api test")
-          npm install 
-          npm ci
+          npm install
+          npm run build
           npm test
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
