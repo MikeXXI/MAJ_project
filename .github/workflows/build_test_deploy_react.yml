@@ -35,7 +35,7 @@ jobs:
           npm install
           npm ci
           npm test  
-      - name: Build the stack mongo - nodejs
+      - name:  Set up Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
       - name: Fix permissions
         run: |
@@ -45,11 +45,10 @@ jobs:
         run: |
           cd server
           npm install
-          npm run build
           npm test
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
-      - name: Stop the stack mongo - nodejs
+      - name: Shutdown Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml down
       # - name: Build the stack mysql - python
       #   run: docker-compose -f docker-compose-v4.yml up -d
