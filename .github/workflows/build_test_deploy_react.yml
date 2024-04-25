@@ -83,14 +83,17 @@ jobs:
           npm run build --if-present
       #- name: Push changes
       #  run: git push
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: my-app/build
-          if-no-files-found: error
+      # - name: Setup Pages
+      #   id: pages
+      #   uses: actions/configure-pages@v3
+      #   with:
+      #       path: my-app/build
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Upload artifact
+      #   uses: actions/upload-pages-artifact@v2
+      #   with:
+      #     path: my-app/build
+      #     if-no-files-found: error
 
   # Deploy job
   deploy:
