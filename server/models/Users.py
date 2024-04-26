@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 
 class User(BaseModel):
-    id : int
+    _id : int
     firstname : str
     lastname : str
     email : str
