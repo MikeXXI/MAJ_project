@@ -1,0 +1,8 @@
+FROM python:latest
+WORKDIR /python-server
+COPY . .
+RUN python -m venv .venv
+RUN /bin/bash -c "source .venv/bin/activate && pip install fastapi uvicorn mysql-connector-python pydantic python-dotenv"
+CMD ["/bin/bash", "-c", "source .venv/bin/activate && uvicorn main:app --host"]
+EXPOSE 8000
+

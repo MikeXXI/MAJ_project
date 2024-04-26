@@ -26,10 +26,10 @@ app.add_middleware(
 
 try:
     connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="maj_bdd"
+        host= os.getenv("MYSQL_HOST"),
+        user= os.getenv("MYSQL_USER"),
+        password= os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE")
     )
     print("Connexion à la base de données réussie")
 except mysql.connector.Error as err:

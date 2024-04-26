@@ -1,36 +1,28 @@
-version: "3.1"
-
-services:
+services:  
   mysql:
     image: mysql:latest
     volumes:
-      - ./sqlfiles:/var/lib/mysql
-    restart: always
+      - ./mysql_data:/var/lib/mysql_data   
     environment:
       MYSQL_ROOT_PASSWORD: password
+      MYSQL_HOST: mysql
+      MYSQL_PASSWORD: password
       MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
     ports:
       - "3306:3306"
-
   python-server:
     image: python-mysql
     volumes:
       - ./python-server:/python-server
     build:
       context: .
-      dockerfile: ./server/DockerfilePython
-    environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=password
-      - MYSQL_DATABASE=mydatabase
-      - PORT=8000
+      dockerfile: ./python-server/DockerfilePython
     ports:
       - "8000:8000"
     depends_on:
       - mysql
-    command: python server.py
-
+    command: uvicorn main:app --host
   react:
     image: react
     build:
@@ -43,4 +35,6 @@ services:
     volumes:
       - ./my-app:/app
       - /app/node_modules
+    depends_on:
+      - python-server
     command: npm start
