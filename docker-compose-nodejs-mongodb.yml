@@ -8,10 +8,6 @@ services:
     volumes:
       - ./mongofiles/:/docker-entrypoint-initdb.d/
     restart: always
-    # environment:
-    #   #   MONGO_INITDB_ROOT_USERNAME: <admin-user>
-    #   #   MONGO_INITDB_ROOT_PASSWORD: <admin-password>
-    #   # MONGO_INITDB_DATABASE: mydatabase
 
   mongo-express:
     image: mongo-express
@@ -21,8 +17,6 @@ services:
       - 8081:8081
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
-      # ME_CONFIG_MONGODB_ADMINUSERNAME: <admin-user>
-      # ME_CONFIG_MONGODB_ADMINPASSWORD: <admin-password>
 
   server:
     image: nodejs-mongo
@@ -37,8 +31,6 @@ services:
       - MONGO_DATABASE
       - SERVER_PASSWORD
       - PORT=8000
-      # - MONGO_USER
-      # - MONGO_PASS
     ports:
       - 8000:8000
     depends_on:
