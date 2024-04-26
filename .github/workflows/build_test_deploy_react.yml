@@ -62,7 +62,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
             working-directory: my-app 
-      - name: Shutdown Docker Environment - mongo / nodejs
+      - name: Shutdown Docker Environment - mysql - python
         run: docker-compose -f docker-compose-python-mysql.yml down
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
