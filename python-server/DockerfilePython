@@ -1,8 +1,7 @@
 FROM python:latest
+RUN apt-get update && apt-get install -y iputils-ping dnsutils
 WORKDIR /python-server
 COPY . .
-RUN python -m venv .venv
-RUN /bin/bash -c "source .venv/bin/activate && pip install fastapi uvicorn mysql-connector-python pydantic python-dotenv"
-CMD ["/bin/bash", "-c", "source .venv/bin/activate && uvicorn main:app --host"]
+RUN pip install uvicorn fastapi[all] mysql-connector-python pydantic python-dotenv bcrypt
 EXPOSE 8000
-
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
