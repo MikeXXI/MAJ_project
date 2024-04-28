@@ -32,9 +32,6 @@ describe("Test API routes", () => {
           city: "Anytown",
         },
       ];
-      // jest
-      //   .spyOn(User.prototype, "find")
-      //   .mockReturnValueOnce(Promise.resolve(mockUsers));
       const findMock = jest.fn().mockResolvedValue(Promise.resolve(mockUsers));
       User.find = findMock;
 

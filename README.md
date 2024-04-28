@@ -7,9 +7,9 @@ This project demonstrates a robust Docker architecture for running a React appli
 ###### DJEGHERIF Mickael (M1 IOT) : 
 Architecture docker fonctionnelle (mysql / python) & Docker compose file
 ###### HAMIDA Aicha (M2 WEB) : 
-Documentation, React with Tailwinds ,  tests end2end with Cypress, pipeline github action  & Docker compose file
+Documentation, React with Tailwinds, tests end2end with Cypress, pipeline github action  & Docker compose file
 ###### DOFFÉMONT Jean Bernard (M1 IOT) :  
-Architecture docker fonctionnelle (mongodb / nodejs)  & tests api Docker compose file
+Architecture docker fonctionnelle (mongodb / nodejs), tests api  & Docker compose file
 
 ## Docker Architecture
 
@@ -17,24 +17,31 @@ The project is structured as follows, facilitating separation of concerns and mo
 
 ```
 .
-├── my-app                  # React frontend application
-│   ├── coverage            # Coverage 
-│   ├── cypress             # Cypress end-to-end tests
-│   ├── DockerfileReact     # Dockerfile for React application
+├── my-app                         # React frontend application
+│   ├── coverage                   # Stores test coverage reports
+│   ├── cypress                    # Contains Cypress end-to-end testing files
+│   ├── DockerfileReact            # Dockerfile to build the React application container
 │   ...
-├── server                  # Backend services
-│   ├── DockerfileNodejs    # Dockerfile for Node.js setup
-│   ├── DockerfilePython    # Dockerfile for Python setup
-│   ├── app.js              # Node.js server script
-│   ├── models  
-│       ├─── user.js        # MongoDB seed data
-│   ├── main.py             # Python server script
-├── sqlfiles                # SQL migration scripts for MySQL
-│   ├── migrate-v001.sql
+├── node-server                    # Node.js backend services
+│   ├── DockerfileNodejs           # Dockerfile for setting up the Node.js environment
+│   ├── models                     # Directory for data models
+│       ├── User.js                # Defines the MongoDB user schema/model
+│   ├── app.js                     # Initializes middleware and routes
+│   ├── server.js                  # Main script to start the Node.js server
+├── python-server                  # Python backend services
+│   ├── DockerfilePython           # Dockerfile for Python service setup
+│   ├── main.py                    # Main backend script for handling requests
+│   ├── models                     # Contains data models
+│       ├── user.py                # Defines a user model
+├── mysql_data                     # Directory for MySQL data scripts
+│   ├── migrate-v001.sql           # SQL script for database migration
+├── mongofiles                     # MongoDB migration scripts
+│   ├── migrate-v001.js            # MongoDB migration script 
 │   ...
-├── docker-compose-nodejs-mongodb.yml # Docker Compose for Node.js + MongoDB
-├── docker-compose-python-mysql.yml   # Docker Compose for Python + MySQL
-└── README.md
+├── docker-compose-nodejs-mongodb.yml  # Docker Compose configuration for Node.js and MongoDB setup
+├── docker-compose-python-mysql.yml    # Docker Compose configuration for Python and MySQL setup
+└── README.md                        # Provides project overview and setup instructions
+
 
 ```
 
@@ -49,24 +56,25 @@ version: "3.1"
 
 services:
   mongo:
-    image: mongo:latest
+    image: mongo:${MONGO_IMAGE_VERSION}
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - ./mongofiles/:/docker-entrypoint-initdb.d/
+
     restart: always
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:${MONGO_EXPRESS_IMAGE_VERSION}
     depends_on:
       - mongo
     ports:
-      - 8081:8081
+      - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
+      - ME_CONFIG_MONGODB_SERVER=mongo
 
   node-server:
-    image: node-server
+    image: ${NODE_IMAGE_VERSION}
     volumes:
       - ./node-server:/node-server
       - /node-server/node_modules
@@ -75,24 +83,24 @@ services:
       dockerfile: ./node-server/DockerfileNodejs
     environment:
       - MONGO_HOST=mongo
-      - MONGO_DATABASE
-      - SERVER_PASSWORD
-      - PORT=8000
+      - MONGO_DATABASE=${MONGO_DATABASE}
+      - SERVER_PASSWORD=${SERVER_PASSWORD}
+      - PORT=${NODE_SERVER_PORT}
     ports:
-      - 8000:8000
+      - "${NODE_SERVER_PORT}:8000"
     depends_on:
       - mongo
     command: node server.js
 
   react:
-    image: react
+    image: ${REACT_IMAGE_VERSION}
     build:
       context: ./my-app
       dockerfile: ./DockerfileReact
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
-      - REACT_APP_SERVER_PORT=8000
+      - REACT_APP_SERVER_PORT=${REACT_APP_SERVER_PORT}
     volumes:
       - ./my-app:/app
       - /app/node_modules
@@ -111,91 +119,61 @@ The docker-compose-python-mysql.yml file outlines a Docker composition for deplo
 #### docker-compose-python-mysql.yml
 
 ```
-version: '3.8'
+version: '3.1'
 services:
-  app:
-    build: ./app
-    ports:
-      - "3000:3000"
-  server:
-    build:
-      context: ./server
-      dockerfile: DockerfilePython
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mysql
-  mysql:
-    image: mysql:5.7
+  server-mysql:
+    image: mysql:latest
     volumes:
-      - ./sqlfiles:/docker-entrypoint-initdb.d
+      - ./mysql_data:/var/lib/mysql_data   
+      - ./mysql_data/migrate-v001.sql:/docker-entrypoint-initdb.d/migrate-v001.sql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: app_db
+      MYSQL_ROOT_PASSWORD: password
     ports:
       - "3306:3306"
-```
-
-### MongoDB, NodeJS, and React
-
-File: docker-compose-nodejs-mongodb.yml
-
-```
-version: "3.1"
-
-services:
-  mongo:
-    image: mongo:latest
-    ports:
-      - 27017:27017
+    command: ["--init-file", "/docker-entrypoint-initdb.d/migrate-v001.sql"]
+    
+  python-server:
+    image: python-server
     volumes:
-      - ./mongofiles/:/docker-entrypoint-initdb.d/
-    restart: always
-
-  mongo-express:
-    image: mongo-express
-    depends_on:
-      - mongo
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-
-  server:
-    image: nodejs-mongo
-    volumes:
-      - ./server:/server
-      - /server/node_modules
+      - ./python-server:/python-server
     build:
       context: .
-      dockerfile: ./server/DockerfileNodejs
+      dockerfile: ./python-server/DockerfilePython
     environment:
-      - MONGO_HOST=mongo
-      - MONGO_DATABASE
-      - SERVER_PASSWORD
-      - PORT=8000
+      SECRET_PASSWORD: ${SECRET_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      PORT: ${MYSQL_PORT}
+      FLASK_APP: ${FLASK_APP}
+      FLASK_DEBUG: ${FLASK_DEBUG}
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
-      - mongo
-    command: node server.js
-
+      - server-mysql
+    command: python main.py
+  
   react:
     image: react
     build:
       context: ./my-app
       dockerfile: ./DockerfileReact
-    ports:
-      - 3000:3000
     environment:
       - REACT_APP_SERVER_PORT=8000
+    ports:
+      - 3000:3000  
     volumes:
       - ./my-app:/app
       - /app/node_modules
     depends_on:
-      - server
+      - python-server
     command: npm start
+volumes:
+  mysql_data:
+  
 ```
+
 
 ## Deployment
 
@@ -221,22 +199,29 @@ Our CI/CD pipeline, defined in .github/workflows/ci-cd.yml, automates the build,
 
 ```
 
-name: CI/CD Pipeline
+name: Build, Test and Deploy React Application
 
-on: [push, pull_request]
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build-and-test:
+  build_test:
+    permissions: # Job-level permissions configuration starts here
+      contents: write # 'write' access to repository contents
+      pull-requests: write # 'write' access to pull requests
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Docker Environment
-        run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
-      ...
-      - name: Shutdown Docker Environment
-        run: docker-compose -f docker-compose-nodejs-mongodb.yml down
 
-     ...
+    strategy:
+      matrix:
+        node-version: [20.x]
+     
 ```
 
 ## Testing
@@ -256,7 +241,7 @@ jest for running your tests.
  To run these tests, navigate to the app directory and execute:
 
 ```
-cd app
+cd my-app
 npm install
 npm install @testing-library/react @testing-library/jest-dom jest axios-mock-adapter react-toastify
 npm test
@@ -269,8 +254,8 @@ _End-to-End Tests_
 For end-to-end testing, we use Cypress. Ensure your application is running (either locally or in a Docker environment), then execute:
 
 ```
-cd app
-npm run cypress:open Or npm run cypress:run
+cd my-app
+npm run cypress:open 
 ```
 
 This will open the Cypress interactive test runner where you can execute specific end-to-end tests.
@@ -282,7 +267,7 @@ _Node.js_
 Unit and integration tests in the Node.js environment are handled by Jest. To run these tests, go to the server directory and use:
 
 ```
-cd server
+cd node-server
 npm install
 npm test
 ```
@@ -294,7 +279,7 @@ _Python_
 For Python, we use pytest for both unit and integration tests. Ensure all dependencies are installed via pip, and then run:
 
 ```
-cd server
+cd python-server
 pip install -r requirements.txt
 pytest
 ```

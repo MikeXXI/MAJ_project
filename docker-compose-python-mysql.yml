@@ -19,14 +19,14 @@ services:
       context: .
       dockerfile: ./python-server/DockerfilePython
     environment:
-      SECRET_PASSWORD: secret++
-      MYSQL_HOST: server-mysql
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: root
-      PORT: 3306
-      FLASK_APP: main.py
-      FLASK_DEBUG: development
+      SECRET_PASSWORD: ${SECRET_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      PORT: ${MYSQL_PORT}
+      FLASK_APP: ${FLASK_APP}
+      FLASK_DEBUG: ${FLASK_DEBUG}
     ports:
       - "8000:8000"
     depends_on:

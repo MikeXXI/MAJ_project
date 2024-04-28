@@ -2,24 +2,25 @@ version: "3.1"
 
 services:
   mongo:
-    image: mongo:latest
+    image: mongo:${MONGO_IMAGE_VERSION}
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - ./mongofiles/:/docker-entrypoint-initdb.d/
+
     restart: always
 
   mongo-express:
-    image: mongo-express
+    image: mongo-express:${MONGO_EXPRESS_IMAGE_VERSION}
     depends_on:
       - mongo
     ports:
-      - 8081:8081
+      - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
+      - ME_CONFIG_MONGODB_SERVER=mongo
 
   node-server:
-    image: node-server
+    image: ${NODE_IMAGE_VERSION}
     volumes:
       - ./node-server:/node-server
       - /node-server/node_modules
@@ -28,24 +29,24 @@ services:
       dockerfile: ./node-server/DockerfileNodejs
     environment:
       - MONGO_HOST=mongo
-      - MONGO_DATABASE
-      - SERVER_PASSWORD
-      - PORT=8000
+      - MONGO_DATABASE=${MONGO_DATABASE}
+      - SERVER_PASSWORD=${SERVER_PASSWORD}
+      - PORT=${NODE_SERVER_PORT}
     ports:
-      - 8000:8000
+      - "${NODE_SERVER_PORT}:8000"
     depends_on:
       - mongo
     command: node server.js
 
   react:
-    image: react
+    image: ${REACT_IMAGE_VERSION}
     build:
       context: ./my-app
       dockerfile: ./DockerfileReact
     ports:
-      - 3000:3000
+      - "3000:3000"
     environment:
-      - REACT_APP_SERVER_PORT=8000
+      - REACT_APP_SERVER_PORT=${REACT_APP_SERVER_PORT}
     volumes:
       - ./my-app:/app
       - /app/node_modules
