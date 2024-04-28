@@ -4,9 +4,9 @@ This project demonstrates a robust Docker architecture for running a React appli
 
 ## Team Members and contributions
 
-DJEGHERIF Mickael (M1 IOT)
-HAMIDA Aicha (M2 WEB)
-DOFFÉMONT Jean Bernard (M1 IOT)
+DJEGHERIF Mickael (M1 IOT) : architecture docker fonctionnelle (mysql / python) & Docker compose file
+HAMIDA Aicha (M2 WEB) : Documentation, React with Tailwinds ,  tests end2end with Cypress, pipeline github action  & Docker compose file
+DOFFÉMONT Jean Bernard (M1 IOT) :  architecture docker fonctionnelle (mongodb / nodejs)  & tests api Docker compose file
 
 ## Docker Architecture
 
@@ -42,26 +42,61 @@ The docker-compose-nodejs-mongodb.yml file defines a Docker composition for runn
 #### docker-compose-nodejs-mongodb.yml :
 
 ```
-version: '3.8'
+version: "3.1"
+
 services:
-  app:
-    build: ./app
+  mongo:
+    image: mongo:latest
     ports:
-      - "3000:3000"
-  server:
-    build:
-      context: ./server
-      dockerfile: DockerfileNodejs
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mongodb
-  mongodb:
-    image: mongo
+      - 27017:27017
     volumes:
-      - ./mongofiles:/data/db
+      - ./mongofiles/:/docker-entrypoint-initdb.d/
+    restart: always
+
+  mongo-express:
+    image: mongo-express
+    depends_on:
+      - mongo
     ports:
-      - "27017:27017"
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+
+  server:
+    image: nodejs-mongo
+    volumes:
+      - ./server:/server
+      - /server/node_modules
+    build:
+      context: .
+      dockerfile: ./server/DockerfileNodejs
+    environment:
+      - MONGO_HOST=mongo
+      - MONGO_DATABASE
+      - SERVER_PASSWORD
+      - PORT=8000
+    ports:
+      - 8000:8000
+    depends_on:
+      - mongo
+    command: node server.js
+
+  react:
+    image: react
+    build:
+      context: ./my-app
+      dockerfile: ./DockerfileReact
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_SERVER_PORT=8000
+    volumes:
+      - ./my-app:/app
+      - /app/node_modules
+    depends_on:
+      - server
+    command: npm start
+
 ```
 
 ## Setup and Running Instructions
@@ -197,6 +232,8 @@ jobs:
       ...
       - name: Shutdown Docker Environment
         run: docker-compose -f docker-compose-nodejs-mongodb.yml down
+
+     ...
 ```
 
 ## Testing
@@ -219,7 +256,6 @@ jest for running your tests.
 cd app
 npm install
 npm install @testing-library/react @testing-library/jest-dom jest axios-mock-adapter react-toastify
-npm install --save-dev @testing-library/jest-dom
 npm test
 ```
 
@@ -231,12 +267,12 @@ For end-to-end testing, we use Cypress. Ensure your application is running (eith
 
 ```
 cd app
-npm run cypress:open
+npm run cypress:open Or npm run cypress:run
 ```
 
 This will open the Cypress interactive test runner where you can execute specific end-to-end tests.
 
-### Backend (Node.js/MongoDB and Python/MySQL) (Not yet implemented)
+### Backend (Node.js/MongoDB and Python/MySQL) 
 
 _Node.js_
 

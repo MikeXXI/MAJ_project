@@ -4,9 +4,9 @@ name: Build, Test and Deploy React Application
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [develop]
+    branches: [master]
   pull_request:
-    branches: [develop]
+    branches: [master]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -55,66 +55,26 @@ jobs:
             working-directory: my-app 
       - name: Shutdown Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml down
-      # - name: Build the stack mysql - python
-      #   run: docker-compose -f docker-compose-v4.yml up -d
-      # - name: Stop the stack mysql - py
-      #   run: docker-compose -f docker-compose-v3.yml down
+
+      # - name: Set up Docker Environment - mysql - python
+      #   run: docker-compose -f docker-compose-python-mysql.yml up -d      
+      # - name: Run e2e tests with cypress
+      #   uses: cypress-io/github-action@v6
+      #   with:
+      #       working-directory: my-app 
+      # - name: Shutdown Docker Environment - mysql - python
+      #   run: docker-compose -f docker-compose-python-mysql.yml down
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - name: Set env
-        run: |
-         npm i -g semver
-         echo "GITHUB_VERSION_BUILD=$(echo $(semver 0.1.1 -i prerelease --preid ${{github.run_id}}-${{github.run_number}}-${{github.run_attempt}}))" >> $GITHUB_ENV
-      #- name: Update versionning
-      #  run: |
-      #    git config --global user.email ""
-      #    git config --global user.name ""
-      #    npm version ${{env.GITHUB_VERSION_BUILD}}
-      #    echo ${{env.GITHUB_VERSION_BUILD}} >> README.md
-      #    git commit -a -m "new version ${{env.GITHUB_VERSION_BUILD}}"
+        uses: codecov/codecov-action@v4.0.1
+        with:
+         token: ${{ secrets.CODECOV_TOKEN }}
+         working-directory: my-app 
+
       - name: Build and docs
         run: |
           cd my-app
           npm run jsdoc
           npm run build --if-present
 
-      # - name: Setup Pages
-      #   id: pages
-      #   uses: actions/configure-pages@v3
-      # - name: Upload artifact
-      #   uses: actions/upload-pages-artifact@v2
-      #   with:
-      #       # Upload entire repository
-      #     path: build
-      #     if-no-files-found: error
-  
-   
 
-  # Deploy job
-  deploy:
-    # Deploy to the github-pages environment
-    environment:
-      name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
-    runs-on: ubuntu-latest
 
-    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
-    permissions:
-      pages: write # to deploy to Pages
-      id-token: write # to verify the deployment originates from an appropriate source
-
-    # Add a dependency to the build job
-    needs: build_test
-    # Specify runner + deployment step
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
-        with:
-            working-directory: my-app 
-         
-        
-
-       
