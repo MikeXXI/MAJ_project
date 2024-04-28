@@ -1,0 +1,52 @@
+version: '3.1'
+services:
+  server-mysql:
+    image: mysql:latest
+    volumes:
+      - ./mysql_data:/var/lib/mysql_data   
+      - ./mysql_data/migrate-v001.sql:/docker-entrypoint-initdb.d/migrate-v001.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    command: ["--init-file", "/docker-entrypoint-initdb.d/migrate-v001.sql"]
+    
+  python-server:
+    image: python-server
+    volumes:
+      - ./python-server:/python-server
+    build:
+      context: .
+      dockerfile: ./python-server/DockerfilePython
+    environment:
+      SECRET_PASSWORD: secret++
+      MYSQL_HOST: server-mysql
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: root
+      PORT: 3306
+      FLASK_APP: main.py
+      FLASK_DEBUG: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      - server-mysql
+    command: python main.py
+  
+  react:
+    image: react
+    build:
+      context: ./my-app
+      dockerfile: ./DockerfileReact
+    environment:
+      - REACT_APP_SERVER_PORT=8000
+    ports:
+      - 3000:3000  
+    volumes:
+      - ./my-app:/app
+      - /app/node_modules
+    depends_on:
+      - python-server
+    command: npm start
+volumes:
+  mysql_data:

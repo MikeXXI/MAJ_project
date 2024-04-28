@@ -13,6 +13,3 @@ CREATE TABLE IF NOT EXISTS `users` (
   `city` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO `users` (`firstname`, `lastname`, `email`, `dateBirth`, `postalCode`, `city`) VALUES
-('Mike', 'Doe', 'mickael.djegherif@outlook.fr', '1992-02-21', '06250', 'Mougins');
