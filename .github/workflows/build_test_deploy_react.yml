@@ -7,7 +7,6 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
-    
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -36,6 +35,7 @@ jobs:
           npm install
           npm ci
           npm test
+          
       - name: Set up Docker Environment - mongo / nodejs
         run: docker-compose -f docker-compose-nodejs-mongodb.yml up -d
       - name: Fix permissions
@@ -50,53 +50,47 @@ jobs:
         run: |
           cd node-server
           npm test
+      - name: Run e2e tests with cypress
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: my-app
+      - name: Shutdown Docker Environment - mongo / nodejs
+        run: docker-compose -f docker-compose-nodejs-mongodb.yml down
 
+      - name: Set up Docker Environment - mysql - python
+        run: docker-compose -f docker-compose-python-mysql.yml up -d
       - name: Install Python Dependencies
         run: |
           cd python-server
           pip install pytest
           pip install Flask
           pip install -r requirements.txt
-  
       - name: Run server tests python
         run: |
           cd python-server
           python -m pytest
-          continue-on-error: true 
-
+          continue-on-error: true
       - name: Upload pytest HTML report
         uses: actions/upload-artifact@v2
-        if: always() 
+        if: always()
         with:
-          name: Pytest HTML Report
-          path: python-server/report.html
-    
+            name: Pytest HTML Report
+            path: python-server/report.html
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
         with:
-            working-directory: my-app 
-      - name: Shutdown Docker Environment - mongo / nodejs
-        run: docker-compose -f docker-compose-nodejs-mongodb.yml down
-
-      - name: Set up Docker Environment - mysql - python
-        run: docker-compose -f docker-compose-python-mysql.yml up -d      
-      - name: Run e2e tests with cypress
-        uses: cypress-io/github-action@v6
-        with:
-            working-directory: my-app 
+          working-directory: my-app
       - name: Shutdown Docker Environment - mysql - python
         run: docker-compose -f docker-compose-python-mysql.yml down
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
         with:
-         token: ${{ secrets.CODECOV_TOKEN }}
-         working-directory: my-app 
+          token: ${{ secrets.CODECOV_TOKEN }}
+          working-directory: my-app
 
       - name: Build and docs
         run: |
           cd my-app
           npm run jsdoc
           npm run build --if-present
-
-
-
