@@ -1,6 +1,4 @@
-networks:
-  mynetwork:
-    driver: bridge
+version: '3.1'
 services:
   server-mysql:
     image: mysql:latest
@@ -9,34 +7,32 @@ services:
       - ./mysql_data/migrate-v001.sql:/docker-entrypoint-initdb.d/migrate-v001.sql
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: mydatabase
-      MYSQL_USER: user
     ports:
       - "3306:3306"
-    networks:
-      - mynetwork
     command: ["--init-file", "/docker-entrypoint-initdb.d/migrate-v001.sql"]
+    
   python-server:
-    image: python-mysql
+    image: python-server
     volumes:
       - ./python-server:/python-server
     build:
       context: .
       dockerfile: ./python-server/DockerfilePython
     environment:
+      SECRET_PASSWORD: secret++
       MYSQL_HOST: server-mysql
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: mydatabase
-      MYSQL_USER: user
-      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      PORT: 3306
+      FLASK_APP: main.py
+      FLASK_DEBUG: development
     ports:
       - "8000:8000"
-    networks:
-      - mynetwork
     depends_on:
       - server-mysql
-    command: ["sh", "-c", "wait-for-it server-mysql:3306 --timeout=30; uvicorn main:app --host 0.0.0.0 --port 8000"]
+    command: python main.py
+  
   react:
     image: react
     build:
@@ -45,12 +41,12 @@ services:
     environment:
       - REACT_APP_SERVER_PORT=8000
     ports:
-      - 3000:3000
-    networks:
-      - mynetwork    
+      - 3000:3000  
     volumes:
       - ./my-app:/app
       - /app/node_modules
     depends_on:
       - python-server
     command: npm start
+volumes:
+  mysql_data:
