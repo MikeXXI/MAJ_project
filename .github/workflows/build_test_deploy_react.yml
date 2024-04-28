@@ -43,11 +43,11 @@ jobs:
           sudo chmod -R u+rw .
       - name: Install Dependencies
         run: |
-          cd server
+          cd node-server
           npm install
       - name: Run server tests
         run: |
-          cd server
+          cd node-server
           npm test
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
