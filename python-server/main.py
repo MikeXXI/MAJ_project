@@ -3,8 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
 
-# Charger les variables d'environnement à partir du fichier .env
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_ROOT_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DATABASE')}"
 app.config['SERVER_PASSWORD'] = os.getenv('SERVER_PASSWORD') 
@@ -47,7 +45,6 @@ def get_users():
 
     return jsonify(user_list), 200
 
-# Fonction d'inscription
 @app.route('/users', methods=['POST'])
 def create_user():
     data = request.json
@@ -58,12 +55,10 @@ def create_user():
     postalCode = data.get('postalCode')
     city = data.get('city')
 
-    # Vérifier si l'utilisateur existe déjà
     existing_email = Users.query.filter_by(email=email).first()
     if existing_email:
         return jsonify({'message': 'Cet email existe déjà'}), 400
 
-    # Créer un nouvel utilisateur
     new_user = Users(firstname=firstname, lastname=lastname, email=email, dateBirth=dateBirth, postalCode=postalCode, city=city)
     db.session.add(new_user)
     db.session.commit()
@@ -81,7 +76,6 @@ def delete_user(user_id):
     if not existing_user:
         return jsonify({'message': 'Utilisateur non trouvé'}), 404
 
-    # Supprimer l'utilisateur de la base de données
     db.session.delete(existing_user)
     db.session.commit()
 
