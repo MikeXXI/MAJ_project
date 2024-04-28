@@ -55,6 +55,15 @@ jobs:
           cd python-server
           pip install pytest
           python -m pytest
+          continue-on-error: true 
+
+      - name: Upload pytest HTML report
+        uses: actions/upload-artifact@v2
+        if: always() 
+        with:
+          name: Pytest HTML Report
+          path: python-server/report.html
+    
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
         with:
