@@ -62,10 +62,9 @@ jobs:
       - name: Install Python Dependencies and run tests
         run: |
           cd python-server
-          python -m venv venv
-          source venv/bin/activate
           pip install -r requirements.txt
           pip install pytest-html
+          python -m pytest
           pytest --html=report.html
       - name: Upload pytest HTML report
         uses: actions/upload-artifact@v2
