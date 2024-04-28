@@ -1,6 +1,9 @@
 import pytest
 from main import app, db, Users 
 from datetime import date
+from dotenv import load_dotenv
+load_dotenv() 
+
 
 @pytest.fixture(scope='module')
 def test_client():
