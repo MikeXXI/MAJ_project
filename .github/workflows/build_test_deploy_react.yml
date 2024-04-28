@@ -59,23 +59,19 @@ jobs:
 
       - name: Set up Docker Environment - mysql - python
         run: docker-compose -f docker-compose-python-mysql.yml up -d
-      - name: Install Python Dependencies
+      - name: Install Python Dependencies and run tests
         run: |
           cd python-server
-          pip install pytest
-          pip install Flask
+          python -m venv venv
+          source venv/bin/activate
           pip install -r requirements.txt
-      - name: Run server tests python
-        run: |
-          cd python-server
-          python -m pytest
-          continue-on-error: true
+          pytest --html=report.html
       - name: Upload pytest HTML report
         uses: actions/upload-artifact@v2
         if: always()
         with:
-            name: Pytest HTML Report
-            path: python-server/report.html
+          name: Pytest HTML Report
+          path: python-server/report.html
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
         with:
