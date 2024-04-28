@@ -18,14 +18,14 @@ services:
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
 
-  server:
-    image: nodejs-mongo
+  node-server:
+    image: node-server
     volumes:
-      - ./server:/server
-      - /server/node_modules
+      - ./node-server:/node-server
+      - /node-server/node_modules
     build:
       context: .
-      dockerfile: ./server/DockerfileNodejs
+      dockerfile: ./node-server/DockerfileNodejs
     environment:
       - MONGO_HOST=mongo
       - MONGO_DATABASE
@@ -50,5 +50,5 @@ services:
       - ./my-app:/app
       - /app/node_modules
     depends_on:
-      - server
+      - node-server
     command: npm start
