@@ -53,7 +53,7 @@ jobs:
         run: |
           cd python-server
           pip install -r requirements.txt
-          python -m pytest
+          python pytest
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
         with:
