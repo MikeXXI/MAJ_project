@@ -50,10 +50,17 @@ jobs:
         run: |
           cd node-server
           npm test
-      - name: Run server tests python
+
+      - name: Install Python Dependencies
         run: |
           cd python-server
           pip install pytest
+          pip install Flask
+          pip install -r requirements.txt
+  
+      - name: Run server tests python
+        run: |
+          cd python-server
           python -m pytest
           continue-on-error: true 
 
