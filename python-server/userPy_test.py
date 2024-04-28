@@ -1,71 +1,93 @@
 import pytest
 from main import app, db, Users
+from datetime import date
 
-@pytest.fixture
-def client():
-    app.config['TESTING'] = True
+@pytest.fixture(scope='module')
+def test_client():
+    # Configure the app with the testing configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    client = app.test_client()
+    app.config['TESTING'] = True
 
-    with app.app_context():
-        db.create_all()
-        yield client
-        db.session.remove()
-        db.drop_all()
+    # Create the database and the database table
+    db.create_all()
 
-def test_get_users(client):
-    # Créer des utilisateurs de test dans la base de données
-    user1 = Users(firstname='John', lastname='Doe', email='john@example.com', dateBirth='1990-01-01', postalCode='12345', city='New York')
-    user2 = Users(firstname='Jane', lastname='Doe', email='jane@example.com', dateBirth='1995-01-01', postalCode='54321', city='Los Angeles')
+    # Get the test client
+    testing_client = app.test_client()
+
+    # Establish an application context
+    ctx = app.app_context()
+    ctx.push()
+
+    yield testing_client  # this is where the testing happens!
+
+    ctx.pop()
+
+@pytest.fixture(scope='module')
+def init_database():
+    # Insert user data
+    user1 = Users(firstname='John', lastname='Doe', email='john@example.com',
+                  dateBirth=date(1990, 1, 1), postalCode='12345', city='New York')
+    user2 = Users(firstname='Jane', lastname='Doe', email='jane@example.com',
+                  dateBirth=date(1995, 1, 1), postalCode='54321', city='Los Angeles')
     db.session.add(user1)
     db.session.add(user2)
     db.session.commit()
 
-    # Effectuer une requête GET pour récupérer les utilisateurs
-    response = client.get('/users')
+    yield db  # this is where the testing happens!
 
-    # Vérifier le code de statut de la réponse
+    db.drop_all()
+
+def test_get_users(test_client, init_database):
+    response = test_client.get('/users')
     assert response.status_code == 200
+    assert len(response.json) == 2
+    assert response.json[0]['email'] == 'john@example.com'
+    assert response.json[1]['email'] == 'jane@example.com'
 
-    # Vérifier que les données des utilisateurs sont correctes dans la réponse JSON
-    data = response.json
-    assert len(data) == 2
-    assert data[0]['firstname'] == 'John'
-    assert data[1]['firstname'] == 'Jane'
-
-def test_create_user(client):
-    # Données de test pour la création d'un nouvel utilisateur
-    user_data = {
+def test_create_user(test_client, init_database):
+    response = test_client.post('/users', json={
         'firstname': 'Alice',
         'lastname': 'Smith',
         'email': 'alice@example.com',
         'dateBirth': '1985-05-05',
         'postalCode': '67890',
         'city': 'Chicago'
-    }
-
-    # Effectuer une requête POST pour créer un nouvel utilisateur
-    response = client.post('/users', json=user_data)
-
-    # Vérifier le code de statut de la réponse
+    })
     assert response.status_code == 201
+    assert 'Utilisateur crée avec succès' in response.json['message']
 
-    # Vérifier que l'utilisateur a été ajouté à la base de données
-    user = Users.query.filter_by(email=user_data['email']).first()
-    assert user is not None
-    assert user.firstname == user_data['firstname']
+def test_create_user_duplicate_email(test_client, init_database):
+    response = test_client.post('/users', json={
+        'firstname': 'Bob',
+        'lastname': 'Brown',
+        'email': 'john@example.com',
+        'dateBirth': '1985-05-05',
+        'postalCode': '67890',
+        'city': 'Chicago'
+    })
+    assert response.status_code == 400
+    assert 'Cet email existe déjà' in response.json['message']
 
-def test_delete_user(client):
-    # Créer un utilisateur de test dans la base de données
-    user = Users(firstname='Bob', lastname='Johnson', email='bob@example.com', dateBirth='1980-02-02', postalCode='13579', city='Seattle')
-    db.session.add(user)
-    db.session.commit()
-
-    # Effectuer une requête DELETE pour supprimer l'utilisateur
-    response = client.delete('/users/{}'.format(user._id))
-
-    # Vérifier le code de statut de la réponse
+def test_delete_user(test_client, init_database):
+    # You would normally retrieve this from your data store
+    user_id_to_delete = 1
+    response = test_client.delete(f'/users/{user_id_to_delete}', json={'password': 'test'})
     assert response.status_code == 200
+    assert 'Utilisateur supprimé avec succès' in response.json['message']
 
-    # Vérifier que l'utilisateur a été supprimé de la base de données
-    assert Users.query.get(user._id) is None
+    # Verify user is actually deleted
+    response = test_client.get('/users')
+    assert response.status_code == 200
+    assert len(response.json) == 1  # one less than before
+
+def test_delete_user_incorrect_password(test_client, init_database):
+    user_id_to_delete = 2
+    response = test_client.delete(f'/users/{user_id_to_delete}', json={'password': 'wrong_password'})
+    assert response.status_code == 400
+    assert 'Mot de passe incorrect' in response.json['message']
+
+def test_delete_user_not_found(test_client, init_database):
+    non_existent_user_id = 999
+    response = test_client.delete(f'/users/{non_existent_user_id}', json={'password': 'test'})
+    assert response.status_code == 404
+    assert 'Utilisateur non trouvé' in response.json['message']

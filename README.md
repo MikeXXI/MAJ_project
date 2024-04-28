@@ -171,7 +171,7 @@ services:
     command: npm start
 volumes:
   mysql_data:
-  
+
 ```
 
 
@@ -280,8 +280,8 @@ For Python, we use pytest for both unit and integration tests. Ensure all depend
 
 ```
 cd python-server
-pip install -r requirements.txt
-pytest
+pip install pytest
+python -m pytest
 ```
 
 This command will discover and run all tests in the server directory.

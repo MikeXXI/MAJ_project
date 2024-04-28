@@ -6,6 +6,7 @@
 node_modules
 /node-server/node_modules
 /python-server/__pycache__
+/python-server/.pytest_cache
 /.pnp
 .pnp.js
 my-app/package-lock.json
