@@ -46,10 +46,15 @@ jobs:
         run: |
           cd node-server
           npm install
-      - name: Run server tests
+      - name: Run server tests nodejs
         run: |
           cd node-server
           npm test
+      - name: Run server tests python
+        run: |
+          cd python-server
+          pip install -r requirements.txt
+          python pytest
       - name: Run e2e tests with cypress
         uses: cypress-io/github-action@v6
         with:
