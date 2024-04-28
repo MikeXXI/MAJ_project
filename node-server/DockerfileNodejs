@@ -1,6 +1,6 @@
 FROM node:20
-WORKDIR /server
-ENV PATH /server/node_modules/.bin:$PATH
+WORKDIR /node-server
+ENV PATH /node-server/node_modules/.bin:$PATH
 RUN npm install mongoose express dotenv cors bcrypt
 EXPOSE 8000
 

@@ -4,9 +4,12 @@ This project demonstrates a robust Docker architecture for running a React appli
 
 ## Team Members and contributions
 
-DJEGHERIF Mickael (M1 IOT) : architecture docker fonctionnelle (mysql / python) & Docker compose file
-HAMIDA Aicha (M2 WEB) : Documentation, React with Tailwinds ,  tests end2end with Cypress, pipeline github action  & Docker compose file
-DOFFÉMONT Jean Bernard (M1 IOT) :  architecture docker fonctionnelle (mongodb / nodejs)  & tests api Docker compose file
+###### DJEGHERIF Mickael (M1 IOT) : 
+Architecture docker fonctionnelle (mysql / python) & Docker compose file
+###### HAMIDA Aicha (M2 WEB) : 
+Documentation, React with Tailwinds ,  tests end2end with Cypress, pipeline github action  & Docker compose file
+###### DOFFÉMONT Jean Bernard (M1 IOT) :  
+Architecture docker fonctionnelle (mongodb / nodejs)  & tests api Docker compose file
 
 ## Docker Architecture
 
@@ -62,14 +65,14 @@ services:
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
 
-  server:
-    image: nodejs-mongo
+  node-server:
+    image: node-server
     volumes:
-      - ./server:/server
-      - /server/node_modules
+      - ./node-server:/node-server
+      - /node-server/node_modules
     build:
       context: .
-      dockerfile: ./server/DockerfileNodejs
+      dockerfile: ./node-server/DockerfileNodejs
     environment:
       - MONGO_HOST=mongo
       - MONGO_DATABASE
@@ -94,7 +97,7 @@ services:
       - ./my-app:/app
       - /app/node_modules
     depends_on:
-      - server
+      - node-server
     command: npm start
 
 ```
