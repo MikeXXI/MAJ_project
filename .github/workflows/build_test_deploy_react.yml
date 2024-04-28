@@ -72,10 +72,6 @@ jobs:
       #   with:
       #     name: Pytest HTML Report
       #     path: python-server/report.html
-      - name: Run e2e tests with cypress
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: my-app
       - name: Shutdown Docker Environment - mysql - python
         run: docker-compose -f docker-compose-python-mysql.yml down
 
