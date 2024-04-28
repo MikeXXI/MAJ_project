@@ -1,93 +1,91 @@
-from multiprocessing import process
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
-import mysql.connector
-from fastapi import FastAPI, APIRouter, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-import json
-from typing import List
-from urllib import request
-from datetime import date
-from pydantic import BaseModel
-import bcrypt
 
-from models.Users import User
+# Charger les variables d'environnement à partir du fichier .env
 
-app = FastAPI(description="API for the users database", version="0.1.0", title="Users API")
-api_router = APIRouter()
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_ROOT_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DATABASE')}"
+app.config['SERVER_PASSWORD'] = os.getenv('SERVER_PASSWORD') 
+db = SQLAlchemy(app)
+CORS(app)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Remplacez ceci par l'URL de votre frontend
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE"],  # Ajoutez les méthodes HTTP que vous utilisez
-    allow_headers=["*"],
-)
+class Users(db.Model):
+    _id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    firstname = db.Column(db.String(255), nullable=False)
+    lastname = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False, unique=True)
+    dateBirth = db.Column(db.Date, nullable=False)
+    postalCode = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(255), nullable=False)
 
-# Définir les paramètres de connexion MySQL
-config = {
-    'user': os.getenv('MYSQL_USER'),
-    'password': os.getenv('MYSQL_PASSWORD'),
-    'host': os.getenv('MYSQL_HOST'),
-    'database': os.getenv('MYSQL_DATABASE'),
-    'port': os.getenv('MYSQL_PORT')
-}
+    def __repr__(self):
+        return f"User(_id={self._id}, firstname={self.firstname}, lastname={self.lastname}, email={self.email}, dateBirth={self.dateBirth}, postalCode={self.postalCode}, city={self.city})"
 
-# Établir la connexion à la base de données MySQL
-try:
-    connection = mysql.connector.connect(**config)
-    print("Connexion à la base de données MySQL réussie!")
-    
-    cursor = connection.cursor()
 
-    @api_router.get("/users", status_code=200)
-    async def get_users():
-        query = ('SELECT * FROM users')
-        cursor.execute(query)
-        db_user = cursor.fetchall()
-        return_data = []
-        for db_user in db_user:
-            return_data.append(User(
-                _id = db_user[0],
-                firstname = db_user[1],
-                lastname = db_user[2],
-                email = db_user[3],
-                dateBirth = db_user[4],
-                postalCode = db_user[5],
-                city = db_user[6]))
-        return return_data
+@app.route('/')
+def hello():
+    return jsonify({'message': 'Hello, World!'})
 
-    @api_router.post("/users", status_code=201)
-    async def create_user(user: User):
-        try:
-            cursor.execute("INSERT INTO users (firstname, lastname, email, dateBirth, postalCode, city) VALUES (%s, %s, %s, %s, %s, %s)",
-                           [user.firstname, user.lastname, user.email, user.dateBirth, user.postalCode, user.city])
-            connection.commit()
-            return {"message": "User created"}
-        except mysql.connector.Error as err:
-            return {"error": err}
-        
-    @api_router.delete("/users/{user_id}", status_code=200)
-    async def delete_user(user_id: int, body: dict):
-        try:
-            serverPassword = "secret++"
-            isPasswordCorrect = body["password"]
-            print("serverPassword : ", serverPassword)
-            if isPasswordCorrect == serverPassword:
-                user = cursor.execute("SELECT * FROM users WHERE _id = %s", (user_id,))
-                if not user:
-                    raise HTTPException(status_code=404, detail="User not found")
-                else:
-                    cursor.execute("DELETE FROM users WHERE _id = %s", (user_id,))
-                    connection.commit()
-                    return {"message": "User deleted"}
-            else:
-                raise HTTPException(status_code=401, detail="Wrong password")
-                 
-        except mysql.connector.Error as err:
-            return {"error": err}
+  
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = Users.query.all()
+    user_list = []
+    for user in users:
+        user_data = {
+            '_id': user._id,
+            'firstname': user.firstname,
+            'lastname': user.lastname,
+            'email': user.email,
+            'dateBirth': user.dateBirth,
+            'postalCode': user.postalCode,
+            'city': user.city
+        }
+        user_list.append(user_data)
 
-    app.include_router(api_router)
+    return jsonify(user_list), 200
 
-except mysql.connector.Error as err:
-    print(f"Erreur de connexion à la base de données MySQL : {err}")
+# Fonction d'inscription
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.json
+    firstname = data.get('firstname')
+    lastname = data.get('lastname')
+    email = data.get('email')
+    dateBirth = data.get('dateBirth')
+    postalCode = data.get('postalCode')
+    city = data.get('city')
+
+    # Vérifier si l'utilisateur existe déjà
+    existing_email = Users.query.filter_by(email=email).first()
+    if existing_email:
+        return jsonify({'message': 'Cet email existe déjà'}), 400
+
+    # Créer un nouvel utilisateur
+    new_user = Users(firstname=firstname, lastname=lastname, email=email, dateBirth=dateBirth, postalCode=postalCode, city=city)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'message': 'Utilisateur crée avec succès'}), 201
+
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    data = request.json
+    passwordVerif = data.get('password')
+
+    if not passwordVerif:
+        return jsonify({'Mot de passe incorrect'}), 400
+    existing_user = Users.query.filter_by(_id=user_id).first()
+    if not existing_user:
+        return jsonify({'message': 'Utilisateur non trouvé'}), 404
+
+    # Supprimer l'utilisateur de la base de données
+    db.session.delete(existing_user)
+    db.session.commit()
+
+    return jsonify({'message': 'Utilisateur supprimé avec succès'}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=8000)
